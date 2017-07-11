@@ -236,13 +236,13 @@
       }
 
       function clickPaging(){
-//        var
+
       }
 
       // 실행부
       init();
 
-      autoRolling();
+//      autoRolling();
 
 
       $('.arrow.right').on('click', function(){
@@ -312,14 +312,52 @@
 
        var indexNumber = $(this).index('.paging-item');
 
-        if( currentIndex + 1 == indexNumber ){
-          moveLeft();
-        } else if( currentIndex - 1 == indexNumber ){
-          moveRight();
+        if( currentIndex != indexNumber ){
+
+          if( currentIndex == 0 ){
+
+            if( indexNumber == $('.view-image').length-1 ){
+              nextIndex = currentIndex - 1;
+              if( !$('.view-image').is(':animated') ){
+                moveRight();
+              }
+            } else {
+              nextIndex = currentIndex + 1;
+              if( !$('.view-image').is(':animated') ){
+                moveLeft();
+              }
+            }
+
+          } else if( currentIndex == $('.view-image').length-1 ) {
+
+            if (indexNumber == 0) {
+              nextIndex = currentIndex + 1;
+              if (!$('.view-image').is(':animated')) {
+                moveLeft();
+              }
+            } else {
+              nextIndex = currentIndex - 1;
+              if (!$('.view-image').is(':animated')) {
+                moveRight();
+              }
+            }
+
+          } else {
+
+            if (currentIndex < indexNumber) {
+              nextIndex = currentIndex + 1;
+              if (!$('.view-image').is(':animated')) {
+                moveLeft();
+              }
+            } else {
+              nextIndex = currentIndex - 1;
+              if (!$('.view-image').is(':animated')) {
+                moveRight();
+              }
+            }
+          }
         }
-
       });
-
     });
 
   </script>

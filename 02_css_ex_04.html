@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CSS 연습 4 - 가상 요소</title>
+  <style>
+    div:before{
+      content:"test";
+      display:block;
+      width:100px;
+      height:30px;
+      background:skyblue;
+    }
+    div:after{
+      content:"";
+      display:block;
+      width:100px;
+      height:30px;
+      background:skyblue;
+    }
+
+    /* 마우스로 드래그해서 텍스트를 블럭으로 선택했을 때 스타일 설정 */
+    ::-moz-selection { /* Code for Firefox */
+      color: red;
+      background: yellow;
+    }
+
+  </style>
+</head>
+<body>
+
+<div>
+  <ul>
+    <li>HMTL</li>
+    <li>CSS</li>
+    <li>Javascript</li>
+  </ul>
+</div>
+
+</body>
+</html>

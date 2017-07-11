@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Attribute(HTML 속성) 제어하기</title>
+  <style>
+    .box{
+      width:100px;
+      height:100px;
+      background:#accdf4;
+    }
+
+    .active{
+      width:300px;
+    }
+
+    .depth2{
+      display:none;
+    }
+
+    .depth2.active{
+      display:block;
+    }
+  </style>
+  <script src="lib/jquery-3.2.1.min.js"></script>
+  <script>
+    $(function(){
+
+      // 클래스 추가/삭제
+      $('.box1').addClass('active');
+      $('.box2').removeClass('box');
+      var $menu = $('.depth1-link');
+      var $depth2 = $('.depth2');
+
+      $menu.on('mouseenter', function(){
+        $depth2.addClass('active');
+      });
+
+      $menu.on('mouseleave', function(){
+        $depth2.removeClass('active');
+      });
+
+      // HTML 속성 제어
+      var $image = $('.image');
+
+      $image.removeAttr('class');
+
+      $image.attr('src', 'Images/001.jpg');
+      $image.attr('alt', '앙리마티스');
+
+    });
+  </script>
+</head>
+<body>
+
+<pre>
+
+  Attribute 제어하기
+
+  1. 클래스 추가/삭제
+
+    - 추가 : addClass() 함수
+
+    - 삭제 : removeClass() 함수
+
+  2. HTML 속성 제어
+
+    - 추가/변경 : attr() 함수
+
+    - 삭제 : removeAttr() 함수
+
+    ** prop() : HTML 속성 중 정보가 아닌 상태를 다루는 속성을 제어할 때 사용하는 함수
+
+</pre>
+
+<div class="box box1">box1</div>
+
+<div class="box box2">box2</div>
+
+<ul class="depth1">
+  <li class="depth1-item">
+    <a href="#" class="depth1-link">depth1</a>
+    <ul class="depth2">
+      <li class="depth2-item">
+        <a href="#" class="depth2-link">depth2</a>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<div>
+  <img src="Images/001.jpg" class="image"/>
+</div>
+
+</body>
+</html>

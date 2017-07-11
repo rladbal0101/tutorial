@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>이벤트 다루기</title>
+  <style>
+    .popup{
+      width:200px;
+      height:200px;
+      background:#fff;
+      border:2px solid red;
+      position:absolute;
+      top:50%;
+      left:50%;
+      margin:-100px 0 0 -100px;
+    }
+    .popup-header{
+      height:30px;
+      background:red;
+      color:#fff;
+    }
+    .popup-header button{
+      background:none;
+      border:0;
+      color: #fff;
+      position:absolute;
+      top:3px;
+      right:3px;
+    }
+
+    .image-wrap{
+      width:300px;
+    }
+
+    /* 큰 사진의 가로길이 : 300px */
+    .image-top{
+      width:300px;
+      height:300px;
+      overflow:hidden;
+    }
+
+    .image-big.full-width{
+      width:100%;
+    }
+
+    .image-big.full-height{
+      height:100%;
+    }
+
+    .image-bottom{
+      width:300px;
+      margin-top:6px;
+    }
+
+    .image-bottom:after{
+      content:"";
+      display:block;
+      clear:both;
+    }
+
+    /* 작은 사진의 가로길이 : 96px, 사이여백 : 6px */
+    .image-bottom-wrap{
+      width:96px;
+      height:96px;
+      margin-right:6px;
+      float:left;
+      overflow:hidden;
+    }
+
+    .image-bottom-wrap:last-child{
+      margin-right:0;
+    }
+
+    .image-thumbnail.full-width{
+      width:100%;
+    }
+
+    .image-thumbnail.full-height{
+      height:100%;
+    }
+
+    .input-text{
+      background:url("Images/place_holder.png") no-repeat;
+    }
+
+    .input-text.focus-in{
+      background:none;
+    }
+
+    .text-display{
+      padding:30px;
+      border:5px solid #accdf4;
+      font-size:30px;
+      display:inline-block;
+    }
+
+    .fixed-tab{
+      width:100%;
+      border-top:3px solid #accdf4;
+      border-bottom:3px solid #accdf4;
+      background:#fff;
+      margin:0;
+    }
+
+    .fixed-tab.fixed{
+      position:fixed;
+      top:0;
+      left:0;
+    }
+
+    .fixed-tab:after{
+      content:"";
+      display:block;
+      clear:both;
+    }
+
+    .fixed-tab-item{
+      list-style-type:none;
+      float:left;
+      margin-right:30px;
+      padding:20px 0;
+    }
+
+    .fixed-tab-item.active{
+      color:#0086B3;
+      background:#ffc0cb;
+    }
+
+    .high-image{
+      width:100%;
+    }
+
+    .wrap{
+      display:none;
+    }
+
+    .loading{
+      width:180px;
+      height:26px;
+      position:absolute;
+      top:50%;
+      left:50%;
+      margin:-13px 0 0 -90px;
+    }
+
+  </style>
+  <script src="lib/jquery-3.2.1.min.js"></script>
+  <script>
+    $(function(){
+
+      var layerPop = '';
+
+      /**
+       * 마우스를 클릭했을 때 팝업창을 띄워주는 예제
+       * */
+      $('.anchor').on('click', function(e){
+        // 이벤트를 제어하자 => event 객체를 사용해서 기능
+        // 1. on() 함수에 인자로 넣어주는 함수에 매개변수 사용
+        // 2. 매개변수가 event 객체로 만들어짐
+        console.log(e);
+
+        // 태그의 기본동작을 막는 기능
+        e.preventDefault(e);
+
+        // a = a + 1 => a += 1
+        layerPop =  '<div class="popup">';
+        layerPop += ' <div class="popup-header">';
+        layerPop += '   <div>메세지</div>';
+        layerPop += '   <button type="button">닫기</button>';
+        layerPop += ' </div>';
+        layerPop += ' <div class="popup-content">';
+        layerPop += '   <p>안녕하세요.</p>';
+        layerPop += ' </div>';
+        layerPop += '</div>';
+
+        $('body').append( layerPop );
+
+      });
+
+      /**
+       * 이미지 마스킹 영역과 이미지의 비율을 비교해서 가로, 세로 길이 지정해주는 예제
+       * */
+      var calculateRatio = {
+
+        $imageTop: $('.image-top'),
+        $imageBig: $('.image-big'),
+        $imageThumb: $('.image-thumbnail'),
+        areaWidth: 0,
+        areaHeight: 0,
+        imageWidth: 0,
+        imageHeight: 0,
+        areaRatio: 0,
+        imageRatio: 0,
+        // 해당 부분의 값을 계산하는 메소드
+        // 마스크 영역 계산
+        areaValue : function () {
+          this.areaWidth = parseInt(this.$imageTop.css('width'));
+          this.areaHeight = parseInt(this.$imageTop.css('height'));
+          this.areaRatio = this.areaWidth / this.areaHeight;
+        },
+        // 이미지 계산
+        imageValue : function ($image) {
+          this.imageWidth = parseInt($image.css('width'));
+          this.imageHeight = parseInt($image.css('height'));
+          this.imageRatio = this.imageWidth / this.imageHeight;
+        },
+
+
+        // 큰 이미지에 적용
+        applyBig : function () {
+
+          this.areaValue();
+
+          this.imageValue(this.$imageBig);
+          if (this.areaRatio > this.imageRatio) {
+            this.$imageBig.removeClass('full-height').addClass('full-width');
+          } else {
+            this.$imageBig.removeClass('full-width').addClass('full-height');
+          }
+        },
+
+        // 작은 이미지에 적용
+        applyThumb : function () {
+
+          this.areaValue();
+
+          for (var i = 0; i < this.$imageThumb.length; i++) {
+
+            this.imageValue(this.$imageThumb.eq(i));
+
+            if (this.areaRatio > this.imageRatio) {
+              this.$imageThumb.eq(i).addClass('full-width');
+            } else {
+              this.$imageThumb.eq(i).addClass('full-height');
+            }
+
+          }
+
+        },
+
+        // 마우스 오버시 이미지 변경 함수
+        changeImage : function( $overImage ){
+          var src = $overImage.children().attr('src');
+          $('.image-big').attr('src', src);
+
+        }
+
+      };
+
+      // 함수 실행
+      calculateRatio.applyBig();
+      calculateRatio.applyThumb();
+
+      // 이벤트 실행
+      $('.image-bottom-wrap').on('mouseenter', function(){
+        calculateRatio.changeImage( $(this) );
+        calculateRatio.applyBig();
+      });
+
+      $('.image-wrap').on('mouseleave', function(){
+        calculateRatio.changeImage( $('.image-bottom-wrap').eq(0) );
+        calculateRatio.applyBig();
+      });
+
+      /**
+       * 인풋 박스에 포커스 이동시 안내 문구의 화면 표시여부를 지정하는 예제
+       * */
+      $('.input-text').on({
+
+        'focusin' : function(){
+          $(this).addClass('focus-in');
+        },
+
+        'focusout' : function(){
+          $(this).removeClass('focus-out');
+        }
+
+      });
+
+      /**
+       * 셀렉트 박스의 목록 중 하나를 선택했을 때 선택한 내용을 화면에 표시하는 예제
+       * */
+      $('.select-box').on('change', function(){
+
+        var textValue = $(this).val();
+
+        $('.select.text-display').text(textValue);
+
+      });
+
+      /**
+       * 인풋 박스에 텍스트 입력 후 전송 버튼 클릭시 내용을 표시하는 예제
+       * */
+      $('.button-send').on('click', function(){
+
+        var textValue = $('.button-text').val();  // val() : 인풋 박스의 값을 읽어오는 함수
+
+        $('.button.text-display').text(textValue);
+
+      });
+
+      /**
+       * 인풋 박스에 텍스트를 입력할 때 마다 내용을 표시하는 예제
+       * */
+      $('.change-text').on('keypress', function(e){
+
+        var textValue = $(this).val() + String.fromCharCode(e.which); // 아스키(ASCII) 코드 값을 문자로 변환하는 함수
+
+        $('.change.text-display').text(textValue);
+
+      });
+
+      /**
+       * 브라우저의 크기를 변경할 때 브라우저의 크기를 가로길이, 세로길이를 출력하는 예제
+       * */
+      $(window).on('resize', function(){
+
+        // 가로길이 값을 읽는 함수 : width()
+        // 세로길이 값을 읽는 함수 : height()
+        // 길이의 숫자값만 읽음(단위표시 안됨)
+
+        var sizeValue = '가로 : ' + $(window).width() + ' 세로 : ' + $(window).height();
+
+        $('.window-size').text(sizeValue);
+
+      });
+
+      /**
+       * 스크롤 될 때 정해진 영역으로 넘어가면 해당 탭이 활성화 되는 예제
+       * */
+
+      // offset() : HTML 요소의 위치(top, left)값을 반환
+      var offsetTop = $('.fixed-tab').offset().top; //처음 한번만 읽어옴
+      var offsetTopReview = $('.tab-content.review').offset().top;
+      var offsetTopChange = $('.tab-content.change').offset().top;
+
+      $(window).on('scroll', function(){
+
+        // scrollTop() : 현재 세로 스크롤 위치값을 반환
+        // scrollLeft() : 현재 가로 스크롤 위치값을 반환
+        var scrollValue =  $(window).scrollTop();
+
+        if( scrollValue < offsetTop ) {
+
+          $('.fixed-tab').removeClass('fixed');
+          $('.fixed-tab-item').removeClass("active");
+
+        }
+        if( scrollValue >= offsetTop ){
+
+          $('.fixed-tab').addClass('fixed');
+          $('.fixed-tab-item').removeClass("active");
+          $('.fixed-tab-item').eq(0).addClass("active");
+
+        }
+        if( scrollValue >= offsetTopReview ) {
+
+          $('.fixed-tab-item').removeClass("active");
+          $('.fixed-tab-item').eq(1).addClass("active");
+
+        }
+        if( scrollValue >= offsetTopChange ) {
+
+          $('.fixed-tab-item').removeClass("active");
+          $('.fixed-tab-item').eq(2).addClass("active");
+
+        }
+
+      });
+
+      /**
+       * 이미지 로딩이 완료되면 메세지를 출력하는 예제
+       *
+       * 페이지의 모든 콘텐츠가 로딩된 이후에 로딩바는 사라지고 콘텐츠를 나타내는 예제
+       *
+       * 페이지의 모든 콘텐츠가 로딩된 이후에 작업하기 위한 이벤트는 window 객체를 대상으로 함
+       *
+       * jQuery 진입점에 포함시키지 않음
+       * */
+
+      $('window').on('load', function(){
+
+        // hide() : 화면에 보이는 요소를 보이지 않게 해주는 함수
+        $('.loading').hide();
+        // show() : 화면에 보이지 않는 요소를 보이게 해주는 함수
+        $('.wrap').show();
+
+      });
+
+    });
+  </script>
+</head>
+<body>
+
+<div class="loading">
+  <img src="Images/loading.gif"/>
+</div>
+
+<div class="wrap">
+
+<pre>
+
+  이벤트
+
+  1. 이벤트의 종류
+
+    - 마우스 이벤트 / 키보드 이벤트 / Element 이벤트 / 사용자 이벤트
+
+  2. 이벤트 단계
+
+    2-1. Capturing
+
+    2-2. Targeting
+
+    2-3. Bubbling
+
+  3. 이벤트 함수
+
+    - on() 함수
+
+    - $(대상).on('이벤트종류', '함수');
+
+  4. 이벤트 이름
+
+    - blur : 포커스를 잃었을 때
+
+    - click : 마우스를 눌렀을 때
+
+    - focusin / focusout : 포커스를 얻었을 때 / 잃었을 때
+
+      ** 키보드의 TAB 키를 사용해서 순차적으로 포커스를 이동시킬 수 있음
+
+      ** 포커스가 이동될 때, 기존의 포커스가 있던 요소는 포커스를 잃게 되고, 다음 요소는 포커스를 얻게 되는 이벤트가 동시에 발생
+
+    - change : 셀렉트 박스의 목록을 선택했을 때
+
+    - keypress: 키보드로 입력했을 때
+
+    - keydown / keyup : 키보드를 눌렀을 때 / 떼었을 때
+
+    - mousedown / mouseup : 마우스 버튼을 눌렀을 때 / 떼었을 때
+
+    - mouseenter / mouseleave : 마우스 커서가 닿았을 때 / 떨어졌을 때 ( bubbling 발생하지 않음 )
+
+    - mouseover / mouseout : 마우스 커서가 닿았을 때 / 떨어졌을 때 ( bubbling 발생함 -> bubbling 이 발생하면 좋지 않음) 사용하지 않는 것이 바람직
+
+    - resize : 브라우저 크기가 변경될 때
+
+    - scroll : 스크롤 될 때 ( 웹 페이지 전체 스크롤 - window 객체 )
+
+    - load / unload : 대상이 로딩되었을 때 / 제거되었을 때 (이미지가 모두 로딩된 이후에 코드가 실행되게 할 때 주로 사용)
+
+    - select : 텍스트를 마우스로 드래그해서 선택했을 때
+
+</pre>
+
+  <div>
+    <a href="http://www.naver.com" class="anchor">네이버 링크</a>
+  </div>
+
+  <div class="image-wrap">
+    <div class="image-top">
+      <img src="Images/003.jpg" class="image-big" />
+    </div>
+    <div class="image-bottom">
+      <div class="image-bottom-wrap"><img src="Images/003.jpg" class="image-thumbnail" /></div>
+      <div class="image-bottom-wrap"><img src="Images/004.jpg" class="image-thumbnail" /></div>
+      <div class="image-bottom-wrap"><img src="Images/005.jpg" class="image-thumbnail" /></div>
+    </div>
+  </div>
+
+  <br /><br /><br />
+
+  <div>
+    <input type="text" class="input-text" />
+  </div>
+
+  <br /><br /><br />
+
+  <div>
+    <select class="select-box">
+      <option>---지역 선택---</option>
+      <option>서울</option>
+      <option>경기</option>
+      <option>충청</option>
+    </select>
+    <div class="select text-display"></div>
+  </div>
+
+  <br /><br /><br />
+
+  <div>
+    <input type="text" class="button-text" />
+    <button type="button" class="button-send">전송</button>
+    <div class="button text-display"></div>
+  </div>
+
+  <br /><br /><br />
+
+  <div>
+    <input type="text" class="change-text" />
+    <div class="change text-display"></div>
+  </div>
+
+  <br/><br /><br />
+
+  <div>
+    <div class="window-size"></div>
+  </div>
+
+  <ul class="fixed-tab">
+    <li class="fixed-tab-item">상품정보</li>
+    <li class="fixed-tab-item">상품리뷰</li>
+    <li class="fixed-tab-item">상품교환</li>
+  </ul>
+
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+
+  <div class="tab-content review">상품리뷰</div>
+
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+
+  <div class="tab-content change">상품교환</div>
+
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+
+  <div>
+    <img src="Images/high-image.jpg" class="high-image"/>
+  </div>
+
+  <div>
+    <a href="#" class="anchor">메세지 출력</a>
+  </div>
+
+</div>
+
+</body>
+</html>
+
